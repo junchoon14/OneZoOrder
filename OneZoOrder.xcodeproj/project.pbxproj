@@ -7,21 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC1D6E9321354B4000C39B49 /* TeaList.txt in Resources */ = {isa = PBXBuildFile; fileRef = BC1D6E9221354B4000C39B49 /* TeaList.txt */; };
 		BC21DF1A213276E60023BC8D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC21DF19213276E60023BC8D /* AppDelegate.swift */; };
-		BC21DF1C213276E60023BC8D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC21DF1B213276E60023BC8D /* ViewController.swift */; };
 		BC21DF1F213276E60023BC8D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BC21DF1D213276E60023BC8D /* Main.storyboard */; };
 		BC21DF21213276EC0023BC8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BC21DF20213276EC0023BC8D /* Assets.xcassets */; };
 		BC21DF24213276EC0023BC8D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BC21DF22213276EC0023BC8D /* LaunchScreen.storyboard */; };
+		BC21DF2C21328B5D0023BC8D /* Tea.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC21DF2B21328B5D0023BC8D /* Tea.swift */; };
+		BC21DF2E21328F040023BC8D /* OrderListTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC21DF2D21328F040023BC8D /* OrderListTableViewController.swift */; };
+		BC21DF3021328F200023BC8D /* OrderListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC21DF2F21328F200023BC8D /* OrderListTableViewCell.swift */; };
+		BC21DF3221329E010023BC8D /* OrderEditTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC21DF3121329E010023BC8D /* OrderEditTableViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BC1D6E9221354B4000C39B49 /* TeaList.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TeaList.txt; sourceTree = "<group>"; };
 		BC21DF16213276E60023BC8D /* OneZoOrder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OneZoOrder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC21DF19213276E60023BC8D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		BC21DF1B213276E60023BC8D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		BC21DF1E213276E60023BC8D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BC21DF20213276EC0023BC8D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BC21DF23213276EC0023BC8D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BC21DF25213276EC0023BC8D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BC21DF2B21328B5D0023BC8D /* Tea.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tea.swift; sourceTree = "<group>"; };
+		BC21DF2D21328F040023BC8D /* OrderListTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderListTableViewController.swift; sourceTree = "<group>"; };
+		BC21DF2F21328F200023BC8D /* OrderListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderListTableViewCell.swift; sourceTree = "<group>"; };
+		BC21DF3121329E010023BC8D /* OrderEditTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderEditTableViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,6 +43,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BC2188C02137CBCB008F7BC5 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				BC21DF2D21328F040023BC8D /* OrderListTableViewController.swift */,
+				BC21DF2F21328F200023BC8D /* OrderListTableViewCell.swift */,
+				BC21DF3121329E010023BC8D /* OrderEditTableViewController.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
 		BC21DF0D213276E50023BC8D = {
 			isa = PBXGroup;
 			children = (
@@ -54,9 +72,11 @@
 		BC21DF18213276E60023BC8D /* OneZoOrder */ = {
 			isa = PBXGroup;
 			children = (
+				BC2188C02137CBCB008F7BC5 /* Controller */,
+				BC21DF2B21328B5D0023BC8D /* Tea.swift */,
 				BC21DF19213276E60023BC8D /* AppDelegate.swift */,
-				BC21DF1B213276E60023BC8D /* ViewController.swift */,
 				BC21DF1D213276E60023BC8D /* Main.storyboard */,
+				BC1D6E9221354B4000C39B49 /* TeaList.txt */,
 				BC21DF20213276EC0023BC8D /* Assets.xcassets */,
 				BC21DF22213276EC0023BC8D /* LaunchScreen.storyboard */,
 				BC21DF25213276EC0023BC8D /* Info.plist */,
@@ -125,6 +145,7 @@
 				BC21DF24213276EC0023BC8D /* LaunchScreen.storyboard in Resources */,
 				BC21DF21213276EC0023BC8D /* Assets.xcassets in Resources */,
 				BC21DF1F213276E60023BC8D /* Main.storyboard in Resources */,
+				BC1D6E9321354B4000C39B49 /* TeaList.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,8 +156,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BC21DF1C213276E60023BC8D /* ViewController.swift in Sources */,
+				BC21DF2C21328B5D0023BC8D /* Tea.swift in Sources */,
+				BC21DF2E21328F040023BC8D /* OrderListTableViewController.swift in Sources */,
+				BC21DF3021328F200023BC8D /* OrderListTableViewCell.swift in Sources */,
 				BC21DF1A213276E60023BC8D /* AppDelegate.swift in Sources */,
+				BC21DF3221329E010023BC8D /* OrderEditTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -283,6 +307,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4JJFAW825W;
 				INFOPLIST_FILE = OneZoOrder/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -300,6 +325,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4JJFAW825W;
 				INFOPLIST_FILE = OneZoOrder/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
