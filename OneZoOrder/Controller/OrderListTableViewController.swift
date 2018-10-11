@@ -8,26 +8,35 @@
 
 import UIKit
 
-class OrderListTableViewController: UITableViewController {
-    
-    var searchController: UISearchController?
-    var getOrder: TeaData!
+class OrderListTableViewController: UITableViewController, UISearchBarDelegate {
+
+    var getOrder: TeaData?
     var teaOrders = [TeaData]()
-    var seachResult = [TeaData]()
+    var searchResults = [TeaData]() {
+        didSet {
+            // 重設 searchArr 後重整 tableView
+            self.tableView.reloadData()
+        }
+    }
     var password: String!
+    var buttonTitle: String!
+    var price: Int = 0
+    var selectedRow: IndexPath!
     
     
+    @IBOutlet weak var totalPriceLabel: UILabel!
+    @IBOutlet weak var orderNumberLabel: UILabel!
+    @IBOutlet weak var searchBar: UISearchBar!
     
-    @IBOutlet weak var listSearchBar: UISearchBar!
     
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        searchController = UISearchController(searchResultsController: nil)
+        self.searchBar.delegate = self
         getData()
-        print(teaOrders)
-
+        
     }
 
     // MARK: - Table view data source
@@ -38,17 +47,17 @@ class OrderListTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    
-        return teaOrders.count
+        
+        if searchBar.text == "" {
+            return teaOrders.count
+        } else {
+            return searchResults.count
+        }
     }
 
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "OrderCell", for: indexPath) as! OrderListTableViewCell
-        
-        var order = teaOrders[indexPath.row]
-        order.id = String(teaOrders.count)
-        cell.numberLabel.text = "No.\(order.id)"
+        let order = searchBar.text == "" ? teaOrders[indexPath.row] : searchResults[indexPath.row]
         cell.nameLabel.text = order.name
         cell.teaNameLabel.text = order.teaName
         cell.priceLabel.text = order.price
@@ -88,7 +97,6 @@ class OrderListTableViewController: UITableViewController {
         default:
             cell.iceLabel.text = "Error"
         }
-        
         return cell
     }
     
@@ -99,21 +107,17 @@ class OrderListTableViewController: UITableViewController {
     // MARK: - Data Process
     @IBAction func unwindToOrderListView(segue: UIStoryboardSegue) {
         
-        if let source = segue.source as? OrderEditTableViewController, let order = source.order {
-           
-            if order.name == "" || order.password == "" || order.teaName == "  選擇茶飲" {
-                //顯示錯誤視窗
-                let errorAlert = UIAlertController(title: "有資料未輸入", message: "請輸入完整資料", preferredStyle: .alert)
-                let okAction = UIAlertAction(title: "確認", style: .default, handler: nil)
-                errorAlert.addAction(okAction)
-                self.present(errorAlert, animated: true, completion: nil)
-            } else {
+        if let source = segue.source as? OrderEditTableViewController, let order = source.order, let buttonTitle = source.buttonTitle  {
+            getOrder = order
+            if buttonTitle == "加入" {
                 teaOrders.insert(order, at: 0)
                 let indexPath = IndexPath(row: 0, section: 0)
                 tableView.insertRows(at: [indexPath], with: .automatic)
-                getOrder = order
-                print(getOrder)
                 sendData()
+                orderInfo()
+            } else { //if buttonTitle == "修改"
+                print(getOrder!.teaName)
+                updateData()
             }
         }
     }
@@ -125,59 +129,126 @@ class OrderListTableViewController: UITableViewController {
             urlRequest.httpMethod = "POST"
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
            
-            let orderData: [String: String] = ["id": getOrder.id, "name": getOrder!.name, "password": getOrder!.password, "teaName": getOrder!.teaName, "price": getOrder!.price, "cup": getOrder!.cup, "sugar": getOrder!.sugar, "ice": getOrder!.ice, "note": getOrder!.note, "editable": getOrder.editable]
+            let orderData: [String: String] = ["name": getOrder!.name, "password": getOrder!.password, "teaName": getOrder!.teaName, "price": getOrder!.price, "cup": getOrder!.cup, "sugar": getOrder!.sugar, "ice": getOrder!.ice, "note": getOrder!.note]
             let postData: [String: Any] = ["data": orderData]
             do {
                 let data = try JSONSerialization.data(withJSONObject: postData, options: [])
-                let task = URLSession.shared.uploadTask(with: urlRequest, from: data) { (reData, response, error) in
-                    if let returnData = reData, let dic = (try? JSONSerialization.jsonObject(with: returnData)) as? [String: String] {
-                        print(dic)
-                    }
-                }
+                let task = URLSession.shared.uploadTask(with: urlRequest, from: data)
                 task.resume()
             }
             catch {
                 
             }
         }
-        
     
     func getData() {
-        let urlStr = "https://sheetdb.io/api/v1/5b8961965a7fd"//.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        let urlStr = "https://sheetdb.io/api/v1/5b8961965a7fd"
         let url = URL(string: urlStr)
         let task = URLSession.shared.dataTask(with: url!) { (data, response, error) in
             if let data = data, let dic = try? JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
                 for list in dic! {
                     if let teaList = TeaData(json: list) {
                         self.teaOrders.append(teaList)
+                        print(list)
+                        print(teaList)
+                        print(self.teaOrders)
                     }
                 }
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
+                    self.orderInfo()
                 }
             }
         }
         task.resume()
     }
     
-    func editData() {
-        let url = URL(string: "https://sheetdb.io/api/v1/5b8961965a7fd")
+    func updateData() {
+        let url = URL(string: "https://sheetdb.io/api/v1/5b8961965a7fd/name/\(getOrder!.name)".addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!)
         var urlRequest = URLRequest(url: url!)
         urlRequest.httpMethod = "PUT"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        //task.resume()
+        let reloadData: [String: String] = ["name": getOrder!.name, "password": getOrder!.password, "teaName": getOrder!.teaName, "price": getOrder!.price, "cup": getOrder!.cup, "sugar": getOrder!.sugar, "ice": getOrder!.ice, "note": getOrder!.note]
+        let putData: [String: Any] = ["data": reloadData]
+    
+        do {
+            let data = try JSONSerialization.data(withJSONObject: putData, options: [])
+            let task = URLSession.shared.uploadTask(with: urlRequest, from: data)
+            
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+                //修改陣列資料
+                self.teaOrders[self.selectedRow.row] = TeaData(json: reloadData)!
+                self.orderInfo()
+            }
+            task.resume()
+        }
+        catch {
+            
+        }
     }
     
     func deleteData() {
-        let url = URL(string: "https://sheetdb.io/api/v1/5b8961965a7fd")
+        let url = URL(string: "https://sheetdb.io/api/v1/5b8961965a7fd/name/\(getOrder!.name)".addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!)
         var urlRequest = URLRequest(url: url!)
         urlRequest.httpMethod = "DELETE"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let selectedData: [String: String] = ["name": getOrder!.name, "password": getOrder!.password, "teaName": getOrder!.teaName, "price": getOrder!.price, "cup": getOrder!.cup, "sugar": getOrder!.sugar, "ice": getOrder!.ice, "note": getOrder!.note]
+        let deleteData: [String: Any] = ["data": selectedData]
         
-        //task.resume()
+        
+        do {
+            let data = try JSONSerialization.data(withJSONObject: deleteData, options: [])
+            let task = URLSession.shared.uploadTask(with: urlRequest, from: data)
+            
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+           }
+            task.resume()
+        }
+        catch {
+            
+        }
     }
     
+    func orderInfo() {
+        self.price = 0
+        for i in 0 ..< self.teaOrders.count {
+            if let money = Int(self.teaOrders[i].price) {
+                self.price += money
+            }
+        }
+        self.totalPriceLabel.text = String(self.price) + "元"
+        self.orderNumberLabel.text = String(self.teaOrders.count) + "杯"
+    }
+    
+    // MARK: - Search Bar Delegate
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+                searchResults = teaOrders.filter({ (order) -> Bool in
+                    let name = order.name
+                    let teaName = order.teaName
+                    let isMatch = name.localizedCaseInsensitiveContains(searchText) || teaName.localizedCaseInsensitiveContains(searchText)
+                    return isMatch
+        })
+        tableView.reloadData()
+    }
+        
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.becomeFirstResponder()
+        searchBar.resignFirstResponder()
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        tableView.reloadData()
+    }
+    
+    func searchBarBookmarkButtonClicked(_ searchBar: UISearchBar) {
+         print("搜索歷史")
+    }
+        
+        
     /*
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -189,17 +260,24 @@ class OrderListTableViewController: UITableViewController {
     // MARK: - Table view trailing Swipe Actions
     //設置向左滑，就會出現刪除和編輯訂單的按鈕
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        selectedRow = indexPath
         //生成"刪除"功能的按鈕
         let deleteAction = UIContextualAction(style: .destructive, title: "刪除") { (action, sourceView, compeletionHandler) in
+            self.getOrder = self.teaOrders[indexPath.row]
+            self.deleteData()
             self.teaOrders.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
+            self.orderInfo()
+            
             //取消動作按鈕
             compeletionHandler(true)
             
         }
         //生成"編輯"功能的按鈕
         let editAction = UIContextualAction(style: .normal, title: "編輯") { (action, sourceView, compeletionHandler) in
+            
             //self.name = self.teaOrders[indexPath.row].name
+            
             self.getOrder = self.teaOrders[indexPath.row]
             print(self.password)
             self.inputPassword()
@@ -220,9 +298,10 @@ class OrderListTableViewController: UITableViewController {
         let okAction = UIAlertAction(title: "確認", style: .default) { (action: UIAlertAction) in
             //let nameAlertTextField  = checkAlert.textFields![0] as UITextField
             let passwordAlertTextField = checkAlert.textFields![0] as UITextField
-            if passwordAlertTextField.text! == self.getOrder.password  {
+            if passwordAlertTextField.text! == self.getOrder!.password  {
                 if let controller = self.storyboard?.instantiateViewController(withIdentifier: "OrderEdit") as? OrderEditTableViewController {
                     controller.editOrder = self.getOrder
+                    controller.navigationItem.rightBarButtonItem?.title = "修改"
                     self.navigationController?.pushViewController(controller, animated: true)
                 }
                 self.dismiss(animated: true, completion: nil)
@@ -269,15 +348,16 @@ class OrderListTableViewController: UITableViewController {
     }
     */
 
-    /*
+   
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        if segue.identifier == "Add" {
+//            let controller = segue.destination as! OrderEditTableViewController
+//            controller.dataRows = listNum + 1
+//        }
+//    }
     
     
 }

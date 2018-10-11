@@ -12,8 +12,7 @@ class OrderEditTableViewController: UITableViewController, UIPickerViewDelegate,
     
     var order: TeaData!
     var editOrder: TeaData!
-    var cellNum: Int = 0
-    var edited: Bool! = false
+    var buttonTitle: String!
     
     var teaTitles = ["原味 · 食茶", "獨味 · 食茶", "特調 · 食茶", "雷蒙 · 食茶", "蜂蜜 · 食茶", "自然 · 食茶", "奶濃 · 食茶", "拿鐵 · 食茶", "丸作 · 牛乳"]
     var teaPickerHidden = true
@@ -42,13 +41,26 @@ class OrderEditTableViewController: UITableViewController, UIPickerViewDelegate,
     @IBOutlet weak var sugarSegController: UISegmentedControl!
     @IBOutlet weak var iceSegController: UISegmentedControl!
     @IBOutlet weak var noteTextField: UITextField!
+    @IBOutlet weak var saveButton: UIBarButtonItem!
+    @IBOutlet weak var listNumLabel: UITextField!
     
-    
+    @IBAction func saveButtonPressed(_ sender: Any) {
+        
+        if nameTextField.text == "" || passwordTextField.text == "" || teaNameLabel.text == "  選擇茶飲" {
+            //顯示錯誤視窗
+            let errorAlert = UIAlertController(title: "有資料未輸入", message: "請輸入完整資料", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "確認", style: .default, handler: nil)
+            errorAlert.addAction(okAction)
+            self.present(errorAlert, animated: true, completion: nil)
+        } else {
+            self.performSegue(withIdentifier: "Edit", sender: nil)
+        }
+        
+    }
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         
         teaPicker.delegate = self
         teaPicker.dataSource = self
@@ -75,16 +87,17 @@ class OrderEditTableViewController: UITableViewController, UIPickerViewDelegate,
         teaList_8 += teaDic[38...43]
         teaList_9 += teaDic[44...49]
         
-        
         if let editOrder = editOrder {
             print(editOrder)
+            nameTextField.isEnabled = false
+            nameTextField.textColor = UIColor.gray
             nameTextField.text = editOrder.name
             passwordTextField.text = editOrder.password
             teaNameLabel.text = editOrder.teaName
             priceLabel.text = editOrder.price
-            cupSegController.setEnabled(true, forSegmentAt: Int(editOrder.cup)!)
-            sugarSegController.setEnabled(true, forSegmentAt: Int(editOrder.sugar)!)
-            iceSegController.setEnabled(true, forSegmentAt: Int(editOrder.ice)!)
+            cupSegController.selectedSegmentIndex = Int(editOrder.cup)!
+            sugarSegController.selectedSegmentIndex =  Int(editOrder.sugar)!
+            iceSegController.selectedSegmentIndex =  Int(editOrder.ice)!
             noteTextField.text = editOrder.note
         }
         
@@ -105,7 +118,7 @@ class OrderEditTableViewController: UITableViewController, UIPickerViewDelegate,
         tableView.beginUpdates() //開始更新tableView
         tableView.endUpdates()  //結束更新tableView
     }
-    
+    //控制cell高度為0則為隱藏，其他則為預設高度
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if teaPickerHidden && indexPath.section == 0 && indexPath.row == 3 {
             return 0
@@ -309,7 +322,7 @@ class OrderEditTableViewController: UITableViewController, UIPickerViewDelegate,
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let id = cellNum.description
+       
         let name = nameTextField.text ?? ""
         let password = passwordTextField.text ?? ""
         let teaName = teaNameLabel.text ?? ""
@@ -318,12 +331,11 @@ class OrderEditTableViewController: UITableViewController, UIPickerViewDelegate,
         let sugar = sugarSegController.selectedSegmentIndex.description
         let ice = iceSegController.selectedSegmentIndex.description
         let note = noteTextField.text ?? ""
-        let editable = edited.description
     
-        let teaData: [String: Any] = ["id": id, "name": name, "password": password, "teaName": teaName, "price": price, "cup": cup, "sugar": sugar, "ice": ice, "note": note, "editable": editable]
+        let teaData: [String: Any] = ["name": name, "password": password, "teaName": teaName, "price": price, "cup": cup, "sugar": sugar, "ice": ice, "note": note]
         order = TeaData(json: teaData)
-//        cellNum = cellNum + 1
-//        edited = false
+        buttonTitle = navigationItem.rightBarButtonItem?.title
+
     }
     
 }
