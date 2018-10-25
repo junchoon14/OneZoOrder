@@ -14,7 +14,7 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate {
     var teaOrders = [TeaData]()
     var searchResults = [TeaData]() {
         didSet {
-            // 重設 searchArr 後重整 tableView
+            // 重設 searchResults 後重整 tableView
             self.tableView.reloadData()
         }
     }
@@ -22,7 +22,8 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate {
     var buttonTitle: String!
     var price: Int = 0
     var selectedRow: IndexPath!
-    
+    //定義UIRefreshCotrol,iOS10後不需要
+    //let refreshControl: UIRefreshControl!
     
     @IBOutlet weak var totalPriceLabel: UILabel!
     @IBOutlet weak var orderNumberLabel: UILabel!
@@ -36,11 +37,18 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate {
         
         self.searchBar.delegate = self
         getData()
+        //添加刷新
+        refreshControl = UIRefreshControl()
+        let attributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        refreshControl?.attributedTitle = NSAttributedString(string: "更新資料", attributes: attributes)
+        refreshControl?.tintColor = UIColor.white
+        refreshControl?.backgroundColor = UIColor.black
+        refreshControl?.addTarget(self, action: #selector(getData), for: UIControl.Event.valueChanged)
+        tableView.refreshControl = refreshControl
         
     }
 
     // MARK: - Table view data source
-
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
@@ -115,47 +123,47 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate {
                 tableView.insertRows(at: [indexPath], with: .automatic)
                 sendData()
                 orderInfo()
+                }
             } else { //if buttonTitle == "修改"
                 print(getOrder!.teaName)
                 updateData()
             }
+        
+    }
+    
+    func sendData() {
+        
+        let url = URL(string: "https://sheetdb.io/api/v1/5b8961965a7fd")
+        var urlRequest = URLRequest(url: url!)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let orderData: [String: String] = ["name": getOrder!.name, "password": getOrder!.password, "teaName": getOrder!.teaName, "price": getOrder!.price, "cup": getOrder!.cup, "sugar": getOrder!.sugar, "ice": getOrder!.ice, "note": getOrder!.note]
+        let postData: [String: Any] = ["data": orderData]
+        do {
+            let data = try JSONSerialization.data(withJSONObject: postData, options: [])
+            let task = URLSession.shared.uploadTask(with: urlRequest, from: data)
+            task.resume()
+        }
+        catch {
+            
         }
     }
-
-        func sendData() {
-            
-            let url = URL(string: "https://sheetdb.io/api/v1/5b8961965a7fd")
-            var urlRequest = URLRequest(url: url!)
-            urlRequest.httpMethod = "POST"
-            urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-           
-            let orderData: [String: String] = ["name": getOrder!.name, "password": getOrder!.password, "teaName": getOrder!.teaName, "price": getOrder!.price, "cup": getOrder!.cup, "sugar": getOrder!.sugar, "ice": getOrder!.ice, "note": getOrder!.note]
-            let postData: [String: Any] = ["data": orderData]
-            do {
-                let data = try JSONSerialization.data(withJSONObject: postData, options: [])
-                let task = URLSession.shared.uploadTask(with: urlRequest, from: data)
-                task.resume()
-            }
-            catch {
-                
-            }
-        }
     
-    func getData() {
+    @objc func getData() {
         let urlStr = "https://sheetdb.io/api/v1/5b8961965a7fd"
         let url = URL(string: urlStr)
         let task = URLSession.shared.dataTask(with: url!) { (data, response, error) in
             if let data = data, let dic = try? JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
+                self.teaOrders = [TeaData]()
                 for list in dic! {
                     if let teaList = TeaData(json: list) {
                         self.teaOrders.append(teaList)
-                        print(list)
-                        print(teaList)
-                        print(self.teaOrders)
                     }
                 }
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
+                    self.refreshControl!.endRefreshing()
                     self.orderInfo()
                 }
             }
@@ -212,6 +220,28 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate {
         }
     }
     
+    @objc func refleshData() {
+        let urlStr = "https://sheetdb.io/api/v1/5b8961965a7fd"
+        let url = URL(string: urlStr)
+        let task = URLSession.shared.dataTask(with: url!) { (data, response, error) in
+            if let data = data, let dic = try? JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
+                self.teaOrders = [TeaData]()
+                for list in dic! {
+                    if let teaList = TeaData(json: list) {
+                        self.teaOrders.append(teaList)
+                    }
+                }
+                DispatchQueue.main.async {
+    
+                    
+                    self.orderInfo()
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    //在Header顯示杯數和總價
     func orderInfo() {
         self.price = 0
         for i in 0 ..< self.teaOrders.count {
@@ -224,6 +254,7 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate {
     }
     
     // MARK: - Search Bar Delegate
+    //搜尋功能函式
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
                 searchResults = teaOrders.filter({ (order) -> Bool in
                     let name = order.name

@@ -42,12 +42,10 @@ class OrderEditTableViewController: UITableViewController, UIPickerViewDelegate,
     @IBOutlet weak var iceSegController: UISegmentedControl!
     @IBOutlet weak var noteTextField: UITextField!
     @IBOutlet weak var saveButton: UIBarButtonItem!
-    @IBOutlet weak var listNumLabel: UITextField!
+    
     
     @IBAction func saveButtonPressed(_ sender: Any) {
-        
-        if nameTextField.text == "" || passwordTextField.text == "" || teaNameLabel.text == "  選擇茶飲" {
-            //顯示錯誤視窗
+        if nameTextField.text == "" || passwordTextField.text == "" || teaNameLabel.text == "選擇茶飲" {
             let errorAlert = UIAlertController(title: "有資料未輸入", message: "請輸入完整資料", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "確認", style: .default, handler: nil)
             errorAlert.addAction(okAction)
@@ -55,8 +53,20 @@ class OrderEditTableViewController: UITableViewController, UIPickerViewDelegate,
         } else {
             self.performSegue(withIdentifier: "Edit", sender: nil)
         }
-        
     }
+        
+        
+        
+//        guard nameTextField.text == "", passwordTextField.text == "", teaNameLabel.text != "選擇茶飲" else {
+//            self.performSegue(withIdentifier: "Edit", sender: nil)
+//            return
+//        }
+//
+//        let errorAlert = UIAlertController(title: "有資料未輸入", message: "請輸入完整資料", preferredStyle: .alert)
+//        let okAction = UIAlertAction(title: "確認", style: .default, handler: nil)
+//        errorAlert.addAction(okAction)
+//        self.present(errorAlert, animated: true, completion: nil)
+    
     
 
     override func viewDidLoad() {

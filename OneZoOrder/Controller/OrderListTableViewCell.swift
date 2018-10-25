@@ -10,7 +10,6 @@ import UIKit
 
 class OrderListTableViewCell: UITableViewCell {
     
-    @IBOutlet weak var numberLabel: UILabel!
     @IBOutlet weak var teaNameLabel: UILabel!
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var priceLabel: UILabel!
